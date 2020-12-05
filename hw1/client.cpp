@@ -21,9 +21,6 @@ public:
     Client();
     bool connection(string, int); // create connection with server
     bool send_data(string data);
-    void register_user();
-    void login();
-    void listAccountBalance();
     string receive(int);
 };
 
@@ -79,30 +76,6 @@ bool Client::send_data(string data)
     return true;
 }
 
-void Client::register_user()
-{
-    string name, num;
-    cout << "Enter username and num (seperate with space): ";
-    cin >> name >> num;
-    string msg = "REGISTER#"+ name +"#" + num + "<CRLF>";
-    send_data(msg);
-}
-
-void Client::login()
-{
-    string name, port;
-    cout << "Enter accountName and portNum (seperate with space): ";
-    cin >> name >> port;
-    string msg = name + "#" + port + "<CRLF>";
-    send_data(msg);
-}
-
-void Client::listAccountBalance()
-{
-    string msg = "List<CRLF>";
-    send_data(msg);
-}
-
 string Client::receive(int size = 512)
 {
     char buffer[size];
@@ -129,10 +102,13 @@ int main(int argc, char *argv[])
 
     client.connection(host, port); //connect to host
 
-    client.register_user();
-    client.login();
-    client.listAccountBalance();
-    client.receive(); // response from listAccountBalance
+    while(true)
+    {
+        string command;
+        cin >> command;
+        client.send_data(command);
+        client.receive();
+    }
 
     return 0;
 }
