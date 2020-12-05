@@ -14,8 +14,8 @@ using namespace std;
 class Client
 {
 private:
-    int sock;
-    std::string address;
+    int sock; // socket description
+    string address;
     string response_data = "";
     int port;
     struct sockaddr_in server;
@@ -51,37 +51,6 @@ bool Client::connection(string address, int port)
 
         cout << "Socket created\n";
     }
-
-    // setup address structure
-    // if (inet_addr(address.c_str()) == -1)
-    // {
-    //     struct hostent *he;
-    //     struct in_addr **addr_list;
-
-    //     //resolve the hostname, its not an ip address
-    //     if ((he = gethostbyname(address.c_str())) == NULL)
-    //     {
-    //         //gethostbyname failed
-    //         herror("gethostbyname");
-    //         cout << "Failed to resolve hostname\n";
-
-    //         return false;
-    //     }
-
-    //     // Cast the h_addr_list to in_addr , since h_addr_list also has the ip address in long format only
-    //     addr_list = (struct in_addr **)he->h_addr_list;
-
-    //     for (int i = 0; addr_list[i] != NULL; i++)
-    //     {
-    //         //strcpy(ip , inet_ntoa(*addr_list[i]) );
-    //         server.sin_addr = *addr_list[i];
-
-    //         cout << address << " resolved to " << inet_ntoa(*addr_list[i]) << endl;
-
-    //         break;
-    //     }
-    // }
-
 
     server.sin_addr.s_addr = inet_addr(address.c_str());
     server.sin_family = AF_INET;
@@ -143,22 +112,18 @@ string Client::receive(int size = 512)
 int main(int argc, char *argv[])
 {
     Client client;
-    string host;
-
-    // cout << "Enter hostname : ";
-    // cin >> host;
+    string host = "127.0.0.1";
 
     //connect to host
-    client.connection("127.0.0.1", 5000);
+    client.connection(host, 5000);
 
     //send some data
-    // client.send_data("GET / HTTP/1.1\r\n\r\n");
+    client.send_data("GET / HTTP/1.1\r\n\r\n");
 
     // //receive and echo reply
     // cout << "----------------------------\n\n";
     // cout << client.receive(1024);
     // cout << "\n\n----------------------------\n\n";
 
-    //done
     return 0;
 }
