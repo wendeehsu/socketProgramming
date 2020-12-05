@@ -2,13 +2,11 @@
 // https://www.binarytides.com/code-a-simple-socket-client-class-in-c/
 
 #include <iostream>     //cout
-// #include <stdio.h>      //printf
 #include <string.h>     //strlen
 #include <string>       //string
 #include <sys/socket.h> //socket
 #include <arpa/inet.h>  //inet_addr
 #include <netdb.h>      //hostent
-
 using namespace std;
 
 class Client
@@ -16,7 +14,6 @@ class Client
 private:
     int sock; // socket description
     string address;
-    string response_data = "";
     int port;
     struct sockaddr_in server;
 
@@ -24,7 +21,7 @@ public:
     Client();
     bool connection(string, int); // create connection with server
     bool send_data(string data);
-    bool register_user(string name, int num);
+    void register_user();
     string receive(int);
 };
 
@@ -80,9 +77,12 @@ bool Client::send_data(string data)
     return true;
 }
 
-bool Client::register_user(string name, int num)
+void Client::register_user()
 {
-    string msg = "REGISTER#<"+ name +">#<" + to_string(num) + "><CRLF>";
+    string username, num;
+    cout << "Enter username and num (seperate with space): ";
+    cin >> username >> num;
+    string msg = "REGISTER#<"+ name +">#<" + num + "><CRLF>";
     send_data(msg);
 }
 
@@ -108,11 +108,12 @@ int main(int argc, char *argv[])
 {
     Client client;
     string host = "127.0.0.1";
+    int port = 5000;
 
     //connect to host
-    client.connection(host, 5000);
+    client.connection(host, port);
 
-    client.register_user("wendee",20);
+    client.register_user();
 
     return 0;
 }
