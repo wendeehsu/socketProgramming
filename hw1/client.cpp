@@ -13,6 +13,7 @@ class Client
 {
 private:
     int sock; // socket description
+    string response_data = "";
     string address;
     int port;
     struct sockaddr_in server;
@@ -79,9 +80,9 @@ bool Client::send_data(string data)
 
 void Client::register_user()
 {
-    string username, num;
+    string name, num;
     cout << "Enter username and num (seperate with space): ";
-    cin >> username >> num;
+    cin >> name >> num;
     string msg = "REGISTER#<"+ name +">#<" + num + "><CRLF>";
     send_data(msg);
 }
