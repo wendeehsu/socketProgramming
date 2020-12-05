@@ -2,7 +2,7 @@
 // https://www.binarytides.com/code-a-simple-socket-client-class-in-c/
 
 #include <iostream>     //cout
-#include <stdio.h>      //printf
+// #include <stdio.h>      //printf
 #include <string.h>     //strlen
 #include <string>       //string
 #include <sys/socket.h> //socket
@@ -22,8 +22,9 @@ private:
 
 public:
     Client();
-    bool connection(string, int);
+    bool connection(string, int); // create connection with server
     bool send_data(string data);
+    bool register_user(string name, int num);
     string receive(int);
 };
 
@@ -41,9 +42,6 @@ bool Client::connection(string address, int port)
     {
         // Create socket
         sock = socket(AF_INET, SOCK_STREAM, 0);
-        cout << "sock = " << sock << "\n";
-        cout << "address = " << address << "port = " << port << "\n";
-
         if (sock == -1)
         {
             perror("Could not create socket");
@@ -67,16 +65,11 @@ bool Client::connection(string address, int port)
     return true;
 }
 
-/*
-    Send data to the connected host
-*/
 bool Client::send_data(string data)
 {
     cout << "Sending data...";
-    cout << data;
-    cout << "\n";
+    cout << data << "\n";
 
-    // Send some data
     if (send(sock, data.c_str(), strlen(data.c_str()), 0) < 0)
     {
         perror("Send failed : ");
@@ -84,13 +77,15 @@ bool Client::send_data(string data)
     }
 
     cout << "Data send\n";
-
     return true;
 }
 
-/*
-    Receive data from the connected host
-*/
+bool Client::register_user(string name, int num)
+{
+    string msg = "REGISTER#<"+ name +">#<" + to_string(num) + "><CRLF>";
+    send_data(msg);
+}
+
 string Client::receive(int size = 512)
 {
     char buffer[size];
@@ -117,13 +112,7 @@ int main(int argc, char *argv[])
     //connect to host
     client.connection(host, 5000);
 
-    //send some data
-    client.send_data("GET / HTTP/1.1\r\n\r\n");
-
-    // //receive and echo reply
-    // cout << "----------------------------\n\n";
-    // cout << client.receive(1024);
-    // cout << "\n\n----------------------------\n\n";
+    client.register_user("wendee",20);
 
     return 0;
 }
