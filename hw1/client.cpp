@@ -13,7 +13,6 @@ class Client
 {
 private:
     int sock; // socket description
-    string response_data = "";
     string address;
     int port;
     struct sockaddr_in server;
@@ -24,6 +23,7 @@ public:
     bool send_data(string data);
     void register_user();
     void login();
+    void listAccountBalance();
     string receive(int);
 };
 
@@ -84,7 +84,7 @@ void Client::register_user()
     string name, num;
     cout << "Enter username and num (seperate with space): ";
     cin >> name >> num;
-    string msg = "REGISTER#<"+ name +">#<" + num + "><CRLF>";
+    string msg = "REGISTER#"+ name +"#" + num + "<CRLF>";
     send_data(msg);
 }
 
@@ -93,7 +93,13 @@ void Client::login()
     string name, port;
     cout << "Enter accountName and portNum (seperate with space): ";
     cin >> name >> port;
-    string msg = "<"+ name +">#<" + port + "><CRLF>";
+    string msg = name + "#" + port + "<CRLF>";
+    send_data(msg);
+}
+
+void Client::listAccountBalance()
+{
+    string msg = "List<CRLF>";
     send_data(msg);
 }
 
@@ -102,7 +108,7 @@ string Client::receive(int size = 512)
     char buffer[size];
     string reply;
 
-    //Receive a reply from the server
+    // Receive a reply from the server
     if (recv(sock, buffer, sizeof(buffer), 0) < 0)
     {
         puts("recv failed");
@@ -110,7 +116,7 @@ string Client::receive(int size = 512)
     }
 
     reply = buffer;
-    response_data = reply;
+    cout << "response from server : \n" << reply;
 
     return reply;
 }
@@ -121,11 +127,12 @@ int main(int argc, char *argv[])
     string host = "127.0.0.1";
     int port = 5000;
 
-    //connect to host
-    client.connection(host, port);
+    client.connection(host, port); //connect to host
 
     client.register_user();
     client.login();
+    client.listAccountBalance();
+    client.receive(); // response from listAccountBalance
 
     return 0;
 }
