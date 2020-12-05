@@ -23,6 +23,7 @@ public:
     bool connection(string, int); // create connection with server
     bool send_data(string data);
     void register_user();
+    void login();
     string receive(int);
 };
 
@@ -87,6 +88,15 @@ void Client::register_user()
     send_data(msg);
 }
 
+void Client::login()
+{
+    string name, port;
+    cout << "Enter accountName and portNum (seperate with space): ";
+    cin >> name >> port;
+    string msg = "<"+ name +">#<" + port + "><CRLF>";
+    send_data(msg);
+}
+
 string Client::receive(int size = 512)
 {
     char buffer[size];
@@ -115,6 +125,7 @@ int main(int argc, char *argv[])
     client.connection(host, port);
 
     client.register_user();
+    client.login();
 
     return 0;
 }
