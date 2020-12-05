@@ -21,7 +21,7 @@ public:
     Client();
     bool connection(string, int); // create connection with server
     bool send_data(string data);
-    string receive(int);
+    void receive(int);
 };
 
 Client::Client()
@@ -76,22 +76,28 @@ bool Client::send_data(string data)
     return true;
 }
 
-string Client::receive(int size = 512)
+void Client::receive(int size = 512)
 {
     char buffer[size];
     string reply;
 
-    // Receive a reply from the server
-    if (recv(sock, buffer, sizeof(buffer), 0) < 0)
-    {
-        puts("recv failed");
-        return NULL;
-    }
+    int pos = 0;
+    memset(buffer, '\0', sizeof(buffer));
+    cout << "response from server : \n";
+    do {
+        int result = recv(sock, buffer, sizeof(buffer) - pos, 0);
+        cout << "result : " << result << "\n";
+        if (result <= 0) {
+            puts("recv failed");
+        }
+        else {
+            pos += result;
+            reply = buffer;
+            cout << " " << reply;
+        }
+    } while (pos < sizeof(buffer));
 
-    reply = buffer;
-    cout << "response from server : \n" << reply;
-
-    return reply;
+    cout << "final buffer : " <<  buffer << "\n";
 }
 
 int main(int argc, char *argv[])
