@@ -21,11 +21,12 @@ public:
     Client();
     bool connection(string, int); // create connection with server
     bool send_data(string data);
-    void receive(int);
+    void receive();
 };
 
 Client::Client()
 {
+    bzero(&server, sizeof(server)); // initialize
     sock = -1;
     port = 0;
     address = "";
@@ -76,28 +77,27 @@ bool Client::send_data(string data)
     return true;
 }
 
-void Client::receive(int size = 512)
+void Client::receive()
 {
-    char buffer[size];
+    char buffer[2000] = {0};
     string reply;
 
-    int pos = 0;
     memset(buffer, '\0', sizeof(buffer));
-    cout << "response from server : \n";
-    do {
-        int result = recv(sock, buffer, sizeof(buffer) - pos, 0);
-        cout << "result : " << result << "\n";
-        if (result <= 0) {
-            puts("recv failed");
-        }
-        else {
-            pos += result;
-            reply = buffer;
-            cout << " " << reply;
-        }
-    } while (pos < sizeof(buffer));
+    int result = recv(sock, buffer, sizeof(buffer), 0);
+    // do {
+    //     int result = recv(sock, buffer, sizeof(buffer) - pos, 0);
+    //     cout << "result : " << result << "\n";
+    //     if (result <= 0) {
+    //         puts("recv failed");
+    //     }
+    //     else {
+    //         pos += result;
+    //         reply = buffer;
+    //         cout << " " << reply;
+    //     }
+    // } while (pos < sizeof(buffer));
 
-    cout << "final buffer : " <<  buffer << "\n";
+    cout << "response from server : \n" << buffer << "\n";
 }
 
 int main(int argc, char *argv[])
