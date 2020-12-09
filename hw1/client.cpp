@@ -87,8 +87,6 @@ int main(int argc, char *argv[])
     Client client;
     string host;
     int port;
-    // string host = "127.0.0.1";
-    // int port = 5000;
 
     cout << "type in your host ip and port: ";
     cin >> host >> port;
