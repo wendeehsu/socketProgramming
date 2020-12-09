@@ -1,6 +1,3 @@
-// reference: 
-// https://www.binarytides.com/code-a-simple-socket-client-class-in-c/
-
 #include <iostream>     //cout
 #include <string.h>     //strlen
 #include <string>       //string
@@ -19,6 +16,7 @@ private:
 
 public:
     Client();
+    bool isConnected = false;
     bool connection(string, int); // create connection with server
     bool send_data(string data);
     void receive();
@@ -37,13 +35,11 @@ bool Client::connection(string address, int port)
     // create socket if it is not already created
     if (sock == -1)
     {
-        // Create socket
-        sock = socket(AF_INET, SOCK_STREAM, 0);
+        sock = socket(AF_INET, SOCK_STREAM, 0); // Create socket
         if (sock == -1)
         {
             perror("Could not create socket");
         }
-
         cout << "Socket created\n";
     }
 
@@ -80,35 +76,26 @@ bool Client::send_data(string data)
 void Client::receive()
 {
     char buffer[2000] = {0};
-    string reply;
 
     memset(buffer, '\0', sizeof(buffer));
     int result = recv(sock, buffer, sizeof(buffer), 0);
-    // do {
-    //     int result = recv(sock, buffer, sizeof(buffer) - pos, 0);
-    //     cout << "result : " << result << "\n";
-    //     if (result <= 0) {
-    //         puts("recv failed");
-    //     }
-    //     else {
-    //         pos += result;
-    //         reply = buffer;
-    //         cout << " " << reply;
-    //     }
-    // } while (pos < sizeof(buffer));
-
     cout << "response from server : \n" << buffer << "\n";
 }
 
 int main(int argc, char *argv[])
 {
     Client client;
-    string host = "127.0.0.1";
-    int port = 5000;
+    string host;
+    int port;
+    // string host = "127.0.0.1";
+    // int port = 5000;
 
-    client.connection(host, port); //connect to host
-
-    while(true)
+    cout << "type in your host ip and port: ";
+    cin >> host >> port;
+    client.isConnected = client.connection(host, port); //connect to host
+    client.receive();
+    
+    while(client.isConnected)
     {
         string command;
         cin >> command;
