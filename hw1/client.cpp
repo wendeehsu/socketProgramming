@@ -4,6 +4,11 @@
 #include <sys/socket.h> //socket
 #include <arpa/inet.h>  //inet_addr
 #include <netdb.h>      //hostent
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <stdlib.h>
 using namespace std;
 
 class Client
@@ -11,12 +16,12 @@ class Client
 private:
     int sock; // socket description
     string address;
-    int port;
+    int server_port;
     struct sockaddr_in server;
 
 public:
     Client();
-    bool isConnected = false;
+    bool isServerConnected;
     bool connection(string, int); // create connection with server
     bool send_data(string data);
     void receive();
@@ -26,8 +31,9 @@ Client::Client()
 {
     bzero(&server, sizeof(server)); // initialize
     sock = -1;
-    port = 0;
+    server_port = 0;
     address = "";
+    isServerConnected = false;
 }
 
 bool Client::connection(string address, int port)
@@ -86,19 +92,28 @@ int main(int argc, char *argv[])
 {
     Client client;
     string host;
-    int port;
+    int server_port;
 
     cout << "type in your host ip and port: ";
-    cin >> host >> port;
-    client.isConnected = client.connection(host, port); //connect to host
-    client.receive();
-    
-    while(client.isConnected)
-    {
-        string command;
-        cin >> command;
-        client.send_data(command);
+    cin >> host >> server_port;
+
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork fail");
+    } else if (pid == 0) {      // child id
+        cout << "pid = 0, i am child \n";
+    } else {
+        cout << "pid " << pid << ", i am parent, connecting to server \n";
+        client.isServerConnected = client.connection(host, server_port); //connect to host
         client.receive();
+        
+        while(client.isServerConnected)
+        {
+            string command;
+            cin >> command;
+            client.send_data(command);
+            client.receive();
+        }
     }
 
     return 0;
