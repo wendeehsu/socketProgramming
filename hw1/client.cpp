@@ -24,6 +24,7 @@ private:
 public:
     Client();
     bool isServerConnected;
+    bool isClientConnected;
     bool createSocket(bool withHost, string address, int port); // create socket
     bool connection(bool withHost); // create connection
     void listen_port();
@@ -39,6 +40,7 @@ Client::Client()
     client_sock = -1;
     new_sock = -1;
     isServerConnected = false;
+    isClientConnected = false;
 }
 
 bool Client::createSocket(bool withHost, string address, int port)
@@ -61,7 +63,7 @@ bool Client::createSocket(bool withHost, string address, int port)
         server.sin_port = htons(port);
     }
     else
-    {
+    {        
         /* connect with client */
         if (client_sock == -1)
         {
@@ -131,13 +133,11 @@ void Client::listen_port()
         }
 
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
+        isClientConnected = true;
 
         while(true)
         {
-            char buffer[2000] = {0};
-            memset(buffer, '\0', sizeof(buffer));
-            recv(new_sock, (char*)buffer, sizeof(buffer), 0);
-            cout << "response from client : \n" << buffer << "\n";            
+            receive(false);
         }
     }
 }
@@ -158,6 +158,11 @@ bool Client::send_data(bool toHost, string data)
     else
     {
         cout << "client..." << data << "\n";
+        if (send(new_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
+        {
+            perror("Send failed : ");
+            return false;
+        }
     }
 
     return true;
@@ -175,7 +180,8 @@ void Client::receive(bool fromHost)
     }
     else
     {
-        /* Recieve from client */
+        int result = recv(new_sock, buffer, sizeof(buffer), 0);
+        cout << "response from client : \n" << buffer << "\n";
     }
 }
 
@@ -223,15 +229,21 @@ int main(int argc, char *argv[])
                 cin >> client_ip >> client_port;
 
                 // connect with client
-                client.createSocket(withHost, client_ip, client_port);
-                client.connection(withHost);
+                if (!client.isClientConnected) {
+                    client.createSocket(withHost, client_ip, client_port);
+                    client.connection(withHost);
+                }
             }
 
             // send message
             string command;
+            cout << "command: ";
             cin >> command;
             client.send_data(withHost, command);
-            client.receive(withHost);
+            if (!withHost)
+            {
+                client.receive(withHost);
+            }
         }
     }
 
