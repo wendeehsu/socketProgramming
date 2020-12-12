@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <stdlib.h>
+#include <netinet/in.h>
 using namespace std;
 
 class Client
@@ -22,7 +23,9 @@ private:
 public:
     Client();
     bool isServerConnected;
-    bool connection(bool withHost, string address, int port); // create connection with server
+    bool createSocket(bool withHost, string address, int port); // create socket
+    bool connection(bool withHost); // create connection
+    void listen_port();
     bool send_data(bool toHost, string data);
     void receive(bool fromHost);
 };
@@ -36,7 +39,7 @@ Client::Client()
     isServerConnected = false;
 }
 
-bool Client::connection(bool withHost, string address, int port)
+bool Client::createSocket(bool withHost, string address, int port)
 {
     if (withHost)
     {
@@ -54,21 +57,56 @@ bool Client::connection(bool withHost, string address, int port)
         server.sin_addr.s_addr = inet_addr(address.c_str());
         server.sin_family = AF_INET;
         server.sin_port = htons(port);
+    }
+    else
+    {
+        /* connect with client */
+        if (client_sock == -1)
+        {
+            client_sock = socket(AF_INET, SOCK_STREAM, 0); // Create socket
+            if (client_sock == -1)
+            {
+                perror("Could not create socket with client");
+            }
+            cout << "Client socket created\n";
+        }
 
+        clientReciever.sin_addr.s_addr = inet_addr(address.c_str());
+        clientReciever.sin_family = AF_INET;
+        clientReciever.sin_port = htons(port);
+    }
+
+    return true;
+}
+
+bool Client::connection(bool withHost)
+{
+    if (withHost)
+    {
         // Connect to remote server
         if (connect(server_sock, (struct sockaddr *)&server, sizeof(server)) < 0)
         {
-            perror("connect failed. Error");
+            perror("connect failed.");
             return false;
         }
     }
     else
     {
-        /* connect with client */
+        // Connect to client server
+        if (connect(client_sock, (struct sockaddr *)&clientReciever, sizeof(clientReciever)) < 0)
+        {
+            perror("client connect failed.");
+            return false;
+        }
     }
 
-    cout << "Connected\n";
     return true;
+}
+
+void Client::listen_port()
+{
+    bind(client_sock, (struct sockaddr *)&clientReciever, sizeof(clientReciever));
+    listen(client_sock, 5);
 }
 
 bool Client::send_data(bool toHost, string data)
@@ -122,15 +160,22 @@ int main(int argc, char *argv[])
     {
         perror("fork fail");
     }
-    else if (pid == 0)
-    { // child id, listen and print
+    else if (pid == 0) // child id, listen and print
+    {
         cout << "pid = 0, i am child \n";
-        /* TODO: listen to client port */
+        string client_add;
+        int client_port;
+
+        client.createSocket(false, client_add, client_port);
+        client.listen_port();
+        
+        /* TODO: accept client port */
     }
     else
     {
         cout << "pid " << pid << ", i am parent, connecting to server \n";
-        client.isServerConnected = client.connection(true, host, server_port); //connect to host
+        client.createSocket(true, host, server_port); //connect to host
+        client.isServerConnected = client.connection(true);
         client.receive(true);
 
         while (client.isServerConnected)
@@ -147,6 +192,8 @@ int main(int argc, char *argv[])
                 cin >> client_ip >> client_port;
 
                 // connect with client
+                client.createSocket(withHost, client_ip, client_port);
+                client.connection(withHost);
             }
 
             // send message
