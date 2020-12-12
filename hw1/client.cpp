@@ -17,6 +17,7 @@ class Client
 private:
     int server_sock; // socket description
     int client_sock;
+    int new_sock;
     struct sockaddr_in server;
     struct sockaddr_in clientReciever;
 
@@ -36,6 +37,7 @@ Client::Client()
     bzero(&clientReciever, sizeof(clientReciever)); // initialize clientReciever
     server_sock = -1;
     client_sock = -1;
+    new_sock = -1;
     isServerConnected = false;
 }
 
@@ -86,7 +88,7 @@ bool Client::connection(bool withHost)
         // Connect to remote server
         if (connect(server_sock, (struct sockaddr *)&server, sizeof(server)) < 0)
         {
-            perror("connect failed.");
+            perror("server connect failed.");
             return false;
         }
     }
@@ -105,8 +107,39 @@ bool Client::connection(bool withHost)
 
 void Client::listen_port()
 {
-    bind(client_sock, (struct sockaddr *)&clientReciever, sizeof(clientReciever));
+    int bindStatus = bind(client_sock, (struct sockaddr *)&clientReciever, sizeof(clientReciever));
+    if (bindStatus < 0)
+    {
+        cout << "Binding port result: " << bindStatus << endl;
+        cerr << "Can't binding socket to local address!" << endl;
+        exit(0);
+    }
+
     listen(client_sock, 5);
+
+    sockaddr_in newSocketAddr;
+    socklen_t newSocketSize = sizeof(newSocketAddr);
+
+    while(true)
+    {
+        new_sock = accept(client_sock, (sockaddr *)&newSocketAddr, &newSocketSize);
+        if (new_sock < 0)
+        {
+            cout << "new_sock fail: " << new_sock << endl;
+            cerr << "Can't accepting the request from client!" << endl;
+            exit(0);
+        }
+
+        cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
+
+        while(true)
+        {
+            char buffer[2000] = {0};
+            memset(buffer, '\0', sizeof(buffer));
+            recv(new_sock, (char*)buffer, sizeof(buffer), 0);
+            cout << "response from client : \n" << buffer << "\n";            
+        }
+    }
 }
 
 bool Client::send_data(bool toHost, string data)
@@ -163,13 +196,11 @@ int main(int argc, char *argv[])
     else if (pid == 0) // child id, listen and print
     {
         cout << "pid = 0, i am child \n";
-        string client_add;
-        int client_port;
+        string client_add = "127.0.0.1";
+        int client_port = 8888;
 
         client.createSocket(false, client_add, client_port);
         client.listen_port();
-        
-        /* TODO: accept client port */
     }
     else
     {
