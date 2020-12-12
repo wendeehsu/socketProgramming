@@ -28,6 +28,7 @@ public:
     bool createSocket(bool withHost, string address, int port); // create socket
     bool connection(bool withHost); // create connection
     void listen_port();
+    void close_client_connection();
     bool send_data(bool toHost, string data);
     void receive(bool fromHost);
 };
@@ -142,6 +143,14 @@ void Client::listen_port()
     }
 }
 
+void Client::close_client_connection()
+{
+    close(new_sock);
+    isClientConnected = false;
+    client_sock = -1;
+    new_sock = -1;
+}
+
 bool Client::send_data(bool toHost, string data)
 {
     cout << "Sending data to ";
@@ -180,7 +189,7 @@ void Client::receive(bool fromHost)
     }
     else
     {
-        int result = recv(new_sock, buffer, sizeof(buffer), 0);
+        int result = recv(client_sock, buffer, sizeof(buffer), 0);
         cout << "response from client : \n" << buffer << "\n";
     }
 }
@@ -201,7 +210,6 @@ int main(int argc, char *argv[])
     }
     else if (pid == 0) // child id, listen and print
     {
-        cout << "pid = 0, i am child \n";
         string client_add = "127.0.0.1";
         int client_port = 8888;
 
@@ -210,7 +218,6 @@ int main(int argc, char *argv[])
     }
     else
     {
-        cout << "pid " << pid << ", i am parent, connecting to server \n";
         client.createSocket(true, host, server_port); //connect to host
         client.isServerConnected = client.connection(true);
         client.receive(true);
@@ -240,7 +247,7 @@ int main(int argc, char *argv[])
             cout << "command: ";
             cin >> command;
             client.send_data(withHost, command);
-            if (!withHost)
+            if (withHost)
             {
                 client.receive(withHost);
             }
