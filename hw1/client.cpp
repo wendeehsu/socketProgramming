@@ -135,11 +135,11 @@ void Client::listen_port()
 
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
         isClientConnected = true;
-
-        while(true)
+        while (true)
         {
             receive(false);
         }
+        
     }
 }
 
@@ -184,13 +184,17 @@ void Client::receive(bool fromHost)
 
     if (fromHost)
     {
-        int result = recv(server_sock, buffer, sizeof(buffer), 0);
-        cout << "response from server : \n" << buffer << "\n";
+        if (recv(server_sock, buffer, sizeof(buffer), 0) > 0)
+        {
+            cout << "response from server : \n" << buffer << "\n";
+        }
     }
     else
     {
-        int result = recv(client_sock, buffer, sizeof(buffer), 0);
-        cout << "response from client : \n" << buffer << "\n";
+        if (recv(new_sock, buffer, sizeof(buffer), 0) > 0) 
+        {
+            cout << "response from client : \n" << buffer << "\n";
+        }
     }
 }
 
@@ -227,6 +231,13 @@ int main(int argc, char *argv[])
             string receiver;
             cout << "send command to host or client (h/c) ? ";
             cin >> receiver;
+
+            if (receiver != "h" || receiver != "c")
+            {
+                cout << "please type `h` or `c` \n";
+                continue;
+            }
+
             bool withHost = receiver == "h";
             if (!withHost)
             {
