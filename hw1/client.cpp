@@ -24,7 +24,7 @@ private:
 public:
     Client();
     bool isServerConnected;
-    bool isClientConnected;
+    bool getClientConnectStatus();
     bool createSocket(bool withHost, string address, int port); // create socket
     bool connection(bool withHost); // create connection
     void listen_port();
@@ -41,7 +41,6 @@ Client::Client()
     client_sock = -1;
     new_sock = -1;
     isServerConnected = false;
-    isClientConnected = false;
 }
 
 bool Client::createSocket(bool withHost, string address, int port)
@@ -134,19 +133,26 @@ void Client::listen_port()
         }
 
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
-        isClientConnected = true;
         while (true)
         {
             receive(false);
         }
-        
     }
+}
+
+bool Client::getClientConnectStatus()
+{
+    cout << "new_sock: " << new_sock << ", client_sock: " << client_sock << endl;
+    if (new_sock == -1 || client_sock == -1)
+    {
+        return false;
+    }
+    return true;
 }
 
 void Client::close_client_connection()
 {
     close(new_sock);
-    isClientConnected = false;
     client_sock = -1;
     new_sock = -1;
 }
@@ -167,7 +173,7 @@ bool Client::send_data(bool toHost, string data)
     else
     {
         cout << "client..." << data << "\n";
-        if (send(new_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
+        if (send(client_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
         {
             perror("Send failed : ");
             return false;
@@ -232,25 +238,21 @@ int main(int argc, char *argv[])
             cout << "send command to host or client (h/c) ? ";
             cin >> receiver;
 
-            if (receiver != "h" || receiver != "c")
+            if (receiver != "h" and receiver != "c")
             {
                 cout << "please type `h` or `c` \n";
                 continue;
             }
 
             bool withHost = receiver == "h";
-            if (!withHost)
+            if (!withHost && !client.getClientConnectStatus())
             {
                 string client_ip;
                 int client_port;
                 cout << "type in client receiver's ip and host: ";
                 cin >> client_ip >> client_port;
-
-                // connect with client
-                if (!client.isClientConnected) {
-                    client.createSocket(withHost, client_ip, client_port);
-                    client.connection(withHost);
-                }
+                client.createSocket(withHost, client_ip, client_port);
+                client.connection(withHost);
             }
 
             // send message
