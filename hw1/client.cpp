@@ -260,10 +260,7 @@ int main(int argc, char *argv[])
             cout << "command: ";
             cin >> command;
             client.send_data(withHost, command);
-            if (withHost)
-            {
-                client.receive(withHost);
-            }
+            client.receive(withHost);
         }
     }
 
