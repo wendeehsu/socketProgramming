@@ -58,7 +58,7 @@ public:
 
 Host::Host()
 {
-    int server_sock = -1;
+    server_sock = -1;
     bzero(&server, sizeof(server));
 }
 
