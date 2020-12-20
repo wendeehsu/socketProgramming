@@ -1,5 +1,5 @@
 main: server.cpp
-	g++ server.cpp -o server
+	g++ -pthread server.cpp -o server
 
 clean:
 	rm server
