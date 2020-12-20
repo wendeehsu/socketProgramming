@@ -22,7 +22,10 @@ private:
     pthread_t my_thread[MAX_CLIENT];
     struct sockaddr_in server;
     void* client_thread(void* arg);
-    static void *client_thread_helper(void *context);
+    static void* client_thread_helper(void *context)
+    {
+        return ((Host *)context)->client_thread(context);
+    }
 
 public:
     Host();
@@ -123,11 +126,6 @@ void* Host::client_thread(void* arg)
     }
 
     pthread_exit(NULL);
-}
-
-void * Host::client_thread_helper(void *context)
-{
-    return ((Host *)context)->client_thread(context);
 }
 
 void Host::Start()
