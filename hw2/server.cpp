@@ -16,7 +16,7 @@ class Host
 {
 private:
     int server_sock; // socket description
-    int new_sock;
+    int client_sock;
     struct sockaddr_in server;
 
 public:
@@ -31,7 +31,7 @@ Host::Host()
 {
     bzero(&server, sizeof(server));
     server_sock = -1;
-    new_sock = -1;
+    client_sock = -1;
 }
 
 bool Host::createSocket(int port)
@@ -71,15 +71,17 @@ void Host::listen_port()
 
     while (true)
     {
-        new_sock = accept(server_sock, (sockaddr *)&newSocketAddr, &newSocketSize);
-        if (new_sock < 0)
+        client_sock = accept(server_sock, (sockaddr *)&newSocketAddr, &newSocketSize);
+        if (client_sock < 0)
         {
-            cout << "new_sock fail: " << new_sock << endl;
+            cout << "client_sock fail: " << client_sock << endl;
             cerr << "Can't accepting the request from client!" << endl;
             exit(0);
         }
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
-        while (true)
+        send_data("Connection accepted!");
+
+        while(true)
         {
             receive();
         }
@@ -89,11 +91,13 @@ void Host::listen_port()
 bool Host::send_data(string data)
 {
     cout << "Sending data..." << data << "\n";
-    if (send(server_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
+    if (send(client_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
     {
         perror("Send failed : ");
         return false;
     }
+
+    return true;
 }
 
 void Host::receive()
@@ -101,10 +105,10 @@ void Host::receive()
     char buffer[2000] = {0};
     memset(buffer, '\0', sizeof(buffer));
 
-    if (recv(new_sock, buffer, sizeof(buffer), 0) > 0)
+    if (recv(client_sock, buffer, sizeof(buffer), 0) > 0)
     {
-        cout << "client : \n"
-             << buffer << "\n";
+        cout << "client :" << buffer << "\n";
+        send_data(buffer);
     }
 }
 
