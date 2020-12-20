@@ -11,35 +11,54 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <vector>
 using namespace std;
 
 #define MAX_CLIENT 5
-typedef void * (*THREADFUNCPTR)(void *);
 
-int server_sock = -1;
+bool contains(string src, string token){
+    return src.rfind(token, 0) == 0;
+}
+
+vector<string> split_str(string s)
+{
+    vector<string> tokens;
+    string delimiter = "#";
+    string token;
+    int pos = 0;
+    while ((pos = s.find(delimiter)) != string::npos)
+    {
+        token = s.substr(0, pos);
+        tokens.push_back(token);
+        s.erase(0, pos + delimiter.length());
+    }
+    tokens.push_back(s);
+
+    return tokens;
+}
 
 class Host
 {
 private:
+    int server_sock;
     pthread_t my_thread[MAX_CLIENT];
     struct sockaddr_in server;
     void* client_thread(void* arg);
-    static void *client_thread_helper(void *context)
-    {
-        return ((Host *)context)->client_thread(context);
-    }
+    static void *client_thread_helper(void *context);
 
 public:
     Host();
     bool createSocket(int port); // create socket
     void listen_port();
     void Start();
+    string handleEvent(vector<string> tokens);
     bool send_data(int client_sock, string data);
     void receive(int client_sock);
 };
 
 Host::Host()
 {
+    int server_sock = -1;
     bzero(&server, sizeof(server));
 }
 
@@ -96,14 +115,21 @@ void Host::receive(int client_sock)
     if (recv(client_sock, buffer, sizeof(buffer), 0) > 0)
     {
         cout << "client :" << buffer << "\n";
-        send_data(client_sock, buffer);
+        string data = buffer;
+        string response = handleEvent(split_str(data));
+        send_data(client_sock, response);
     }
+}
+
+void* Host::client_thread_helper(void *context)
+{
+    return ((Host *)context)->client_thread(context);
 }
 
 void* Host::client_thread(void* arg)
 {
     int threadID = (int)(size_t)(arg);
-    cout << "This is worker_thread()" << threadID << "\n";
+    cout << "This is thread : " << threadID << "\n";
     sockaddr_in newSocketAddr;
     socklen_t newSocketSize = sizeof(newSocketAddr);
 
@@ -120,10 +146,10 @@ void* Host::client_thread(void* arg)
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
         send_data(client_sock, "Connection accepted!");
 
-        // while(true)
-        // {
-        //     receive(client_sock);
-        // }
+        while(true)
+        {
+            receive(client_sock);
+        }
     }
 
     pthread_exit(NULL);
@@ -131,7 +157,6 @@ void* Host::client_thread(void* arg)
 
 void Host::Start()
 {
-    cout << "In main: creating thread\n";
     for(int i = 0; i < MAX_CLIENT; i++) {
         int ret =  pthread_create(&my_thread[i], NULL, &Host::client_thread_helper, (void*)i);
         if(ret != 0) {
@@ -141,6 +166,34 @@ void Host::Start()
     }
 
     pthread_join(my_thread[0], NULL);
+}
+
+string Host::handleEvent(vector<string> tokens)
+{
+    string response;
+    if (contains(tokens[0], "Exit") && tokens.size() == 1)
+    {
+        response = "Bye \n";
+    }
+    else if (contains(tokens[0], "REGISTER") && tokens.size() == 3)
+    {
+        response = "REGISTER: " + tokens[1] + ", balance = " + tokens[2] + "\n";
+    }
+    else if (contains(tokens[0], "List") && tokens.size() == 1)
+    {
+        response = "List my balance \n";
+    }
+    else if (tokens.size() == 2)
+    {
+        response = "Log in \n";
+    }
+    else
+    {
+        response = "please check your command format \n";
+    }
+    cout << response;
+
+    return response;
 }
 
 int main(int argc, char *argv[])
