@@ -15,17 +15,14 @@ using namespace std;
 
 #define MAX_CLIENT 5
 
+int server_sock = -1;
 class Host
 {
 private:
-    int server_sock;
     pthread_t my_thread[MAX_CLIENT];
     struct sockaddr_in server;
     void* client_thread(void* arg);
-    static void* client_thread_helper(void *context)
-    {
-        return ((Host *)context)->client_thread(context);
-    }
+    static void* client_thread_helper(void *context);
 
 public:
     Host();
@@ -38,7 +35,6 @@ public:
 
 Host::Host()
 {
-    server_sock = -1;
     bzero(&server, sizeof(server));
 }
 
@@ -97,6 +93,11 @@ void Host::receive(int client_sock)
         cout << "client :" << buffer << "\n";
         send_data(client_sock, buffer);
     }
+}
+
+void* Host::client_thread_helper(void *context)
+{
+    return ((Host *)context)->client_thread(context);
 }
 
 void* Host::client_thread(void* arg)
