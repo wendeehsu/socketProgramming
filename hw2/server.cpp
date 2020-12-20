@@ -16,6 +16,8 @@ using namespace std;
 
 #define MAX_CLIENT 5
 
+int server_sock = -1;
+
 bool contains(string src, string token){
     return src.rfind(token, 0) == 0;
 }
@@ -40,7 +42,6 @@ vector<string> split_str(string s)
 class Host
 {
 private:
-    int server_sock;
     pthread_t my_thread[MAX_CLIENT];
     struct sockaddr_in server;
     void* client_thread(void* arg);
@@ -58,7 +59,6 @@ public:
 
 Host::Host()
 {
-    server_sock = -1;
     bzero(&server, sizeof(server));
 }
 
