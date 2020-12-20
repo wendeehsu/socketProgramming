@@ -120,10 +120,10 @@ void* Host::client_thread(void* arg)
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
         send_data(client_sock, "Connection accepted!");
 
-        while(true)
-        {
-            receive(client_sock);
-        }
+        // while(true)
+        // {
+        //     receive(client_sock);
+        // }
     }
 
     pthread_exit(NULL);
@@ -151,8 +151,7 @@ int main(int argc, char *argv[])
     cout << "type in your port: ";
     cin >> port;
     myserver.createSocket(port);
-    // myserver.listen_port();
-
+    myserver.listen_port();
     myserver.Start();
 
     return 0;
