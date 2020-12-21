@@ -198,7 +198,6 @@ string Client::receive(bool fromHost)
 {
     char buffer[2000] = {0};
     memset(buffer, '\0', sizeof(buffer));
-    string response = buffer;
 
     if (fromHost)
     {
@@ -214,7 +213,8 @@ string Client::receive(bool fromHost)
             cout << "response from client : \n" << buffer << "\n";
         }
     }
-
+    
+    string response = buffer;
     return response;
 }
 
