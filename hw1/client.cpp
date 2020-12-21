@@ -12,6 +12,10 @@
 #include <netinet/in.h>
 using namespace std;
 
+bool contains(string src, string token){
+    return src.rfind(token, 0) == 0;
+}
+
 class Client
 {
 private:
@@ -28,9 +32,10 @@ public:
     bool createSocket(bool withHost, string address, int port); // create socket
     bool connection(bool withHost); // create connection
     void listen_port();
+    void closeConnection();
     void close_client_connection();
     bool send_data(bool toHost, string data);
-    void receive(bool fromHost);
+    string receive(bool fromHost);
 };
 
 Client::Client()
@@ -105,6 +110,12 @@ bool Client::connection(bool withHost)
     }
 
     return true;
+}
+
+void Client::closeConnection()
+{
+    cout << "end connection!";
+    close(server_sock);
 }
 
 void Client::listen_port()
@@ -183,23 +194,17 @@ bool Client::send_data(bool toHost, string data)
     return true;
 }
 
-void Client::receive(bool fromHost)
+string Client::receive(bool fromHost)
 {
     char buffer[2000] = {0};
     memset(buffer, '\0', sizeof(buffer));
+    string response = buffer;
 
     if (fromHost)
     {
         if (recv(server_sock, buffer, sizeof(buffer), 0) > 0)
         {
             cout << "response from server : \n" << buffer << "\n";
-        }
-
-        string response = buffer;
-        if (response.rfind("Bye", 0) == 0)
-        {
-            cout << "end connection!";
-            close(server_sock);
         }
     }
     else
@@ -209,6 +214,8 @@ void Client::receive(bool fromHost)
             cout << "response from client : \n" << buffer << "\n";
         }
     }
+
+    return response;
 }
 
 int main(int argc, char *argv[])
@@ -267,7 +274,13 @@ int main(int argc, char *argv[])
             cout << "command: ";
             cin >> command;
             client.send_data(withHost, command);
-            client.receive(withHost);
+            string response = client.receive(withHost);
+
+            if (contains(response, "Bye"))
+            {
+                client.closeConnection();
+                return 0;
+            }
         }
     }
 
