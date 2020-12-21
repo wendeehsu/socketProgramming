@@ -194,6 +194,13 @@ void Client::receive(bool fromHost)
         {
             cout << "response from server : \n" << buffer << "\n";
         }
+
+        string response = buffer;
+        if (response.rfind("Bye", 0) == 0)
+        {
+            cout << "end connection!";
+            close(server_sock);
+        }
     }
     else
     {
