@@ -82,8 +82,7 @@ void Host::receive(int client_sock)
     {
         cout << "client :" << buffer << "\n";
         string data = buffer;
-        string response = handleEvent(split_str(data));
-        send_data(client_sock, response);
+        string response = handleEvent(client_sock, split_str(data));
     }
 }
 
@@ -134,12 +133,14 @@ void Host::Start()
     pthread_join(my_thread[0], NULL);
 }
 
-string Host::handleEvent(vector<string> tokens)
+string Host::handleEvent(int client_sock, vector<string> tokens)
 {
     string response;
     if (contains(tokens[0], "Exit") && tokens.size() == 1)
     {
         response = "Bye \n";
+        send_data(client_sock, response);
+        close(client_sock);
     }
     else if (contains(tokens[0], "REGISTER") && tokens.size() == 3)
     {
@@ -158,6 +159,6 @@ string Host::handleEvent(vector<string> tokens)
         response = "please check your command format \n";
     }
     cout << response;
-
+    
     return response;
 }
