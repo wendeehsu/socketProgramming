@@ -156,7 +156,7 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
     {
         response = "Bye \n";
         send_data(client_sock, response);
-        close(client_sock);
+        EndConnection(client_sock);
         isExit = true;
     }
     else if (contains(tokens[0], "REGISTER") && tokens.size() == 3)
@@ -274,4 +274,16 @@ string Host::Login(int sd, string name)
     {
         return "220 AUTH_FAIL\n";
     }
+}
+
+void Host::EndConnection(int sd)
+{
+    for (int i = 0; i < accounts.size(); i++)
+    {
+        if (accounts[i].sd == sd)
+        {
+            accounts[i].sd = -1;
+        }
+    }
+    close(sd);
 }

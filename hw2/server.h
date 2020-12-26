@@ -35,6 +35,7 @@ public:
     string RegisterAccount(vector<string> data);
     string GetOnlineAccounts(int sd);
     string Login(int sd, string name);
+    void EndConnection(int sd);
 };
 
 class Account
