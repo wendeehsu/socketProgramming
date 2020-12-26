@@ -29,7 +29,17 @@ public:
     bool createSocket(int port); // create socket
     void listen_port();
     void Start();
-    string handleEvent(int client_sock, vector<string> tokens);
     bool send_data(int client_sock, string data);
     void receive(int client_sock);
+    string handleEvent(int client_sock, vector<string> tokens);
+    string RegisterAccount(vector<string> data);
+};
+
+class Account
+{
+public:
+    Account(string _name, int _balance);
+    string name;
+    int balance;
+    int sd;
 };

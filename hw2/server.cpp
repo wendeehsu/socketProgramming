@@ -1,6 +1,7 @@
-#include "server.h" 
+#include "server.h"
 
 int server_sock = -1;
+vector<Account> accounts; // account list
 
 bool contains(string src, string token){
     return src.rfind(token, 0) == 0;
@@ -21,6 +22,12 @@ vector<string> split_str(string s)
     tokens.push_back(s);
 
     return tokens;
+}
+
+Account::Account(string _name, int _balance){
+    name = _name;
+    balance = _balance;
+    sd = -1;
 }
 
 Host::Host()
@@ -136,15 +143,18 @@ void Host::Start()
 string Host::handleEvent(int client_sock, vector<string> tokens)
 {
     string response;
+    bool isExit = false;
+
     if (contains(tokens[0], "Exit") && tokens.size() == 1)
     {
         response = "Bye \n";
         send_data(client_sock, response);
         close(client_sock);
+        isExit = true;
     }
     else if (contains(tokens[0], "REGISTER") && tokens.size() == 3)
     {
-        response = "REGISTER: " + tokens[1] + ", balance = " + tokens[2] + "\n";
+        response = RegisterAccount(tokens);
     }
     else if (contains(tokens[0], "List") && tokens.size() == 1)
     {
@@ -159,6 +169,35 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
         response = "please check your command format \n";
     }
     cout << response;
+
+    if(!isExit)
+    {
+        send_data(client_sock,response);
+    }
     
     return response;
+}
+
+string Host::RegisterAccount(vector<string> data)
+{
+    string name = data[1];
+    bool accountExist = false;
+    for (int i = 0; i < accounts.size(); i++)
+    {
+        if (accounts[i].name == name)
+        {
+            accountExist = true;
+        }
+    }
+
+    if (accountExist)
+    {
+        return "210 FAIL\n";
+    }
+    else
+    {
+        Account newUser(name, stoi(data[2]));
+        accounts.push_back(newUser);
+        return "100 OK\n";
+    }
 }
