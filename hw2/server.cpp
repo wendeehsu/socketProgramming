@@ -1,6 +1,8 @@
 #include "server.h"
 
 int server_sock = -1;
+int server_port = -1;
+const string server_addr = "127.0.0.1";
 vector<Account> accounts; // account list
 
 bool contains(string src, string token)
@@ -50,9 +52,10 @@ bool Host::createSocket(int port)
         cout << "Socket created\n";
     }
 
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_addr.s_addr = inet_addr(server_addr.c_str());
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
+    server_port = port;
 
     return true;
 }
@@ -166,7 +169,7 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
     }
     else if (tokens.size() == 2)
     {
-        response = "Log in \n";
+        response = Login(client_sock, tokens[0]);
     }
     else
     {
@@ -203,5 +206,54 @@ string Host::RegisterAccount(vector<string> data)
         Account newUser(name, stoi(data[2]));
         accounts.push_back(newUser);
         return "100 OK\n";
+    }
+}
+
+string Host::Login(int sd, string name)
+{
+    int accountIndex = -1;
+    bool isLogined = false;
+    int numLoggined = 0;
+    string accountsLoggined;
+    for (int i = 0; i < accounts.size(); i++)
+    {
+        if (accounts[i].name == name)
+        {
+            accountIndex = i;
+
+            if (accounts[i].sd != -1)
+            {
+                isLogined = true;
+            }
+            else
+            {
+                accounts[i].sd = sd;
+            }
+            
+        }
+
+        if (accounts[i].sd != -1) // loggined 
+        {
+            numLoggined++;
+            accountsLoggined += accounts[i].name + "#" + server_addr + "#" + to_string(server_port) + "\n";
+        }
+    }
+
+    if (accountIndex != -1) // account exist
+    {
+        if (isLogined) // handle second-login-error
+        {
+            return "account has been logged in \n";
+        }
+        else
+        {
+            string response = to_string(accounts[accountIndex].balance) + "\n";
+            response += to_string(numLoggined) + "\n" + accountsLoggined;
+            return response;
+        }
+    }
+    else
+    {
+        return "220 AUTH_FAIL\n";
     }
 }
