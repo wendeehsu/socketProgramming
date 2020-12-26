@@ -33,6 +33,7 @@ public:
     void receive(int client_sock);
     string handleEvent(int client_sock, vector<string> tokens);
     string RegisterAccount(vector<string> data);
+    string GetOnlineAccounts(int sd);
     string Login(int sd, string name);
 };
 

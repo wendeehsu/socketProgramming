@@ -165,7 +165,7 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
     }
     else if (contains(tokens[0], "List") && tokens.size() == 1)
     {
-        response = "List my balance \n";
+        response = GetOnlineAccounts(client_sock);
     }
     else if (tokens.size() == 2)
     {
@@ -209,12 +209,39 @@ string Host::RegisterAccount(vector<string> data)
     }
 }
 
+string Host::GetOnlineAccounts(int sd)
+{
+    int balance = -1;
+    int numLoggined = 0;
+    string accountsLoggined;
+    for (int i = 0; i < accounts.size(); i++)
+    {
+        if (accounts[i].sd != -1) // loggined 
+        {
+            if (accounts[i].sd == sd)
+            {
+                balance = accounts[i].balance;
+            }
+
+            numLoggined++;
+            accountsLoggined += accounts[i].name + "#" + server_addr + "#" + to_string(server_port) + "\n";
+        }
+    }
+
+    if(balance == -1)
+    {
+        return "please login first \n";
+    }
+
+    string response = to_string(balance) + "\n";
+    response += to_string(numLoggined) + "\n" + accountsLoggined;
+    return response;
+}
+
 string Host::Login(int sd, string name)
 {
     int accountIndex = -1;
     bool isLogined = false;
-    int numLoggined = 0;
-    string accountsLoggined;
     for (int i = 0; i < accounts.size(); i++)
     {
         if (accounts[i].name == name)
@@ -229,13 +256,6 @@ string Host::Login(int sd, string name)
             {
                 accounts[i].sd = sd;
             }
-            
-        }
-
-        if (accounts[i].sd != -1) // loggined 
-        {
-            numLoggined++;
-            accountsLoggined += accounts[i].name + "#" + server_addr + "#" + to_string(server_port) + "\n";
         }
     }
 
@@ -247,9 +267,7 @@ string Host::Login(int sd, string name)
         }
         else
         {
-            string response = to_string(accounts[accountIndex].balance) + "\n";
-            response += to_string(numLoggined) + "\n" + accountsLoggined;
-            return response;
+            return GetOnlineAccounts(sd);
         }
     }
     else
