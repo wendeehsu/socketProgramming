@@ -3,7 +3,8 @@
 int server_sock = -1;
 vector<Account> accounts; // account list
 
-bool contains(string src, string token){
+bool contains(string src, string token)
+{
     return src.rfind(token, 0) == 0;
 }
 
@@ -24,7 +25,8 @@ vector<string> split_str(string s)
     return tokens;
 }
 
-Account::Account(string _name, int _balance){
+Account::Account(string _name, int _balance)
+{
     name = _name;
     balance = _balance;
     sd = -1;
@@ -93,12 +95,12 @@ void Host::receive(int client_sock)
     }
 }
 
-void* Host::client_thread_helper(void *context)
+void *Host::client_thread_helper(void *context)
 {
     return ((Host *)context)->client_thread(context);
 }
 
-void* Host::client_thread(void* arg)
+void *Host::client_thread(void *arg)
 {
     int threadID = (int)(size_t)(arg);
     cout << "This is thread : " << threadID << "\n";
@@ -118,7 +120,7 @@ void* Host::client_thread(void* arg)
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
         send_data(client_sock, "Connection accepted!");
 
-        while(true)
+        while (true)
         {
             receive(client_sock);
         }
@@ -129,9 +131,11 @@ void* Host::client_thread(void* arg)
 
 void Host::Start()
 {
-    for(int i = 0; i < MAX_CLIENT; i++) {
-        int ret =  pthread_create(&my_thread[i], NULL, &Host::client_thread_helper, (void*)i);
-        if(ret != 0) {
+    for (int i = 0; i < MAX_CLIENT; i++)
+    {
+        int ret = pthread_create(&my_thread[i], NULL, &Host::client_thread_helper, (void *)i);
+        if (ret != 0)
+        {
             cout << "Error: pthread_create() failed\n";
             exit(EXIT_FAILURE);
         }
@@ -170,11 +174,11 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
     }
     cout << response;
 
-    if(!isExit)
+    if (!isExit)
     {
-        send_data(client_sock,response);
+        send_data(client_sock, response);
     }
-    
+
     return response;
 }
 

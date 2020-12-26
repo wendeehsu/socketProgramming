@@ -21,7 +21,7 @@ class Host
 private:
     pthread_t my_thread[MAX_CLIENT];
     struct sockaddr_in server;
-    void* client_thread(void* arg);
+    void *client_thread(void *arg);
     static void *client_thread_helper(void *context);
 
 public:
