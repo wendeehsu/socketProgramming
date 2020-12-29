@@ -223,6 +223,8 @@ int main(int argc, char *argv[])
     Client client;
     string host;
     int server_port;
+    string client_add = "127.0.0.1";
+    int client_port = 8888;
 
     cout << "type in your host ip and port: ";
     cin >> host >> server_port;
@@ -234,9 +236,6 @@ int main(int argc, char *argv[])
     }
     else if (pid == 0) // child id, listen and print
     {
-        string client_add = "127.0.0.1";
-        int client_port = 8888;
-
         client.createSocket(false, client_add, client_port);
         client.listen_port();
     }
@@ -261,11 +260,11 @@ int main(int argc, char *argv[])
             bool withHost = receiver == "h";
             if (!withHost && !client.getClientConnectStatus())
             {
-                string client_ip;
-                int client_port;
-                cout << "type in client receiver's ip and host: ";
-                cin >> client_ip >> client_port;
-                client.createSocket(withHost, client_ip, client_port);
+                // string client_ip;
+                // int client_port;
+                // cout << "type in client receiver's ip and host: ";
+                // cin >> client_ip >> client_port;
+                client.createSocket(withHost, client_add, client_port);
                 client.connection(withHost);
             }
 
