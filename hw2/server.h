@@ -14,7 +14,7 @@
 #include <vector>
 using namespace std;
 
-#define MAX_CLIENT 5
+#define MAX_CLIENT 10
 
 class Host
 {
