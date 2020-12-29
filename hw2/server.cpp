@@ -134,7 +134,7 @@ void *Host::client_thread(void *arg)
 
 void Host::Start()
 {
-    for (int i = 0; i < MAX_CLIENT; i++)
+    for (int i = 0; i < 2; i++)
     {
         int ret = pthread_create(&my_thread[i], NULL, &Host::client_thread_helper, (void *)i);
         if (ret != 0)
