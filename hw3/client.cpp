@@ -12,6 +12,11 @@
 #include <netinet/in.h>
 using namespace std;
 
+const string local_addr = "127.0.0.1";
+int server_sock = -1; // talk to server
+int client_sock = -1; // talk to client
+int new_sock = -1; // listen from client
+
 bool contains(string src, string token){
     return src.rfind(token, 0) == 0;
 }
@@ -19,9 +24,6 @@ bool contains(string src, string token){
 class Client
 {
 private:
-    int server_sock; // socket description
-    int client_sock;
-    int new_sock;
     struct sockaddr_in server;
     struct sockaddr_in clientReciever;
 
@@ -42,9 +44,6 @@ Client::Client()
 {
     bzero(&server, sizeof(server));                 // initialize server
     bzero(&clientReciever, sizeof(clientReciever)); // initialize clientReciever
-    server_sock = -1;
-    client_sock = -1;
-    new_sock = -1;
     isServerConnected = false;
 }
 
@@ -222,12 +221,13 @@ int main(int argc, char *argv[])
 {
     Client client;
     string host;
-    int server_port;
-    string client_add = "127.0.0.1";
-    int client_port = 8888;
+    int server_port; // the port to connect with the server
+    int client_port; // the port listening for connection
 
     cout << "type in your host ip and port: ";
     cin >> host >> server_port;
+    cout << "type in client communication port: ";
+    cin >> client_port;
 
     pid_t pid = fork();
     if (pid == -1)
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
     }
     else if (pid == 0) // child id, listen and print
     {
-        client.createSocket(false, client_add, client_port);
+        client.createSocket(false, local_addr, client_port);
         client.listen_port();
     }
     else
@@ -258,27 +258,37 @@ int main(int argc, char *argv[])
             }
 
             bool withHost = receiver == "h";
-            if (!withHost && !client.getClientConnectStatus())
+            if (!withHost) // talk to client
             {
-                // string client_ip;
-                // int client_port;
-                // cout << "type in client receiver's ip and host: ";
-                // cin >> client_ip >> client_port;
-                client.createSocket(withHost, client_add, client_port);
+                // if (!client.getClientConnectStatus())
+                // {
+                //     }
+                int port;
+                cout << "type in client receiver's port: ";
+                cin >> port;
+                client.createSocket(withHost, local_addr, port);
                 client.connection(withHost);
+                
+                string command;
+                cout << "command: ";
+                cin >> command;
+                client.send_data(withHost, command);
+                string response = client.receive(withHost);
+
             }
-
-            // send message
-            string command;
-            cout << "command: ";
-            cin >> command;
-            client.send_data(withHost, command);
-            string response = client.receive(withHost);
-
-            if (contains(response, "Bye"))
+            else // talk to server
             {
-                client.closeConnection();
-                return 0;
+                string command;
+                cout << "command: ";
+                cin >> command;
+                client.send_data(withHost, command);
+                string response = client.receive(withHost);
+
+                if (contains(response, "Bye"))
+                {
+                    client.closeConnection();
+                    return 0;
+                }
             }
         }
     }
