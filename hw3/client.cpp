@@ -260,14 +260,15 @@ int main(int argc, char *argv[])
             bool withHost = receiver == "h";
             if (!withHost) // talk to client
             {
-                // if (!client.getClientConnectStatus())
-                // {
-                //     }
+
                 int port;
                 cout << "type in client receiver's port: ";
                 cin >> port;
-                client.createSocket(withHost, local_addr, port);
-                client.connection(withHost);
+                cout << "client_sock = " << client_sock << endl;
+                if (client_sock == -1) {
+                    client.createSocket(withHost, local_addr, port);
+                    client.connection(withHost);
+                }
                 
                 string command;
                 cout << "command: ";
