@@ -1,5 +1,10 @@
 #include "server.h"
 
+SSL *ssl[MAX];
+SSL_CTX *ctx;
+char SERVER_CERT[MAX] = "server.crt";
+char SERVER_PRI[MAX] = "server.key";
+
 int server_sock = -1;
 int server_port = -1;
 const string server_addr = "127.0.0.1";
@@ -37,6 +42,47 @@ Account::Account(string _name, int _balance)
 Host::Host()
 {
     bzero(&server, sizeof(server));
+}
+
+void CertifyServer(SSL_CTX* ctx)
+{ 
+    if (SSL_CTX_use_certificate_file(ctx, SERVER_CERT, SSL_FILETYPE_PEM) <= 0)
+    {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+    
+    if (SSL_CTX_use_PrivateKey_file(ctx, SERVER_PRI, SSL_FILETYPE_PEM) <= 0)
+    {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+    
+    if (!SSL_CTX_check_private_key(ctx))
+    {
+        ERR_print_errors_fp(stderr);
+        cout << "--> Private key does not match the public certification." << endl;
+        abort();
+    }
+
+    // verify client??
+}
+
+SSL_CTX* initCTXServer(void)
+{
+    SSL_CTX *ctx;
+    SSL_METHOD *ssl_method;
+
+    OpenSSL_add_all_algorithms();
+    SSL_load_error_strings();
+    ssl_method = TLSv1_server_method();
+    ctx = SSL_CTX_new(ssl_method);
+    if(ctx == NULL)
+    {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+    return ctx;
 }
 
 bool Host::createSocket(int port)

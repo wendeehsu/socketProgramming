@@ -12,9 +12,13 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <vector>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/crypto.h>
 using namespace std;
 
 #define MAX_CLIENT 10
+#define MAX 256
 
 class Host
 {
