@@ -87,6 +87,10 @@ SSL_CTX* initCTXServer(void)
 
 bool Host::createSocket(int port)
 {
+    // initialize SSL
+    ctx = initCTXServer();
+    CertifyServer(ctx);
+
     // create socket if it is not already created
     if (server_sock == -1)
     {
@@ -166,6 +170,7 @@ void *Host::client_thread(void *arg)
             cerr << "Can't accepting the request from client!" << endl;
             exit(0);
         }
+        cout << "client_sock = " << client_sock << endl;
 
         ssl[client_sock] = SSL_new(ctx);
         SSL_set_fd(ssl[client_sock], client_sock);
@@ -175,11 +180,12 @@ void *Host::client_thread(void *arg)
             cout << "--> No SSL acception at server." << endl;
             continue;
         }
+        cout << "sslAcceptRes = " << sslAcceptRes << endl;
         
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
 
         string msg = "--> Connection accepted.";
-        SSL_write(ssl[forClient], msg.c_str(), msg.length());
+        SSL_write(ssl[client_sock], msg.c_str(), msg.length());
 
         // send_data(client_sock, "Connection accepted!");
 
