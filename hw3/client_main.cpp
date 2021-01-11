@@ -9,12 +9,11 @@ bool contains(string src, string token){
 int main(int argc, char *argv[])
 {
     Client client;
-    string host;
     int server_port; // the port to connect with the server
     int client_port; // the port listening for connection
 
-    cout << "type in your host ip and port: ";
-    cin >> host >> server_port;
+    cout << "type in your host port: ";
+    cin >> server_port;
     cout << "type in client communication port: ";
     cin >> client_port;
 
@@ -30,9 +29,9 @@ int main(int argc, char *argv[])
     }
     else
     {
-        client.createSocket(true, host, server_port); //connect to host
+        client.createSocket(true, local_addr, server_port); //connect to host
         client.isServerConnected = client.connection(true);
-        client.receive(true);
+        // client.receive(true);
 
         while (client.isServerConnected)
         {

@@ -3,6 +3,70 @@
 int server_sock = -1; // talk to server
 int client_sock = -1; // talk to client
 int new_sock = -1; // listen from client
+char CLIENT_CERT[MAX] = "a.crt";
+char CLIENT_PRI[MAX] = "a.key";
+char buff[MAX];
+SSL *ssl;
+
+SSL_CTX* initCTX(void)
+{
+    SSL_CTX *ctx;
+    const SSL_METHOD *ssl_method;
+
+    SSL_library_init();
+    SSL_load_error_strings();
+    ssl_method = SSLv23_method();
+    ctx = SSL_CTX_new(ssl_method);
+    if(ctx == NULL)
+    {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+    return ctx;
+}
+
+void CertifyClient(SSL_CTX* ctx)
+{
+    if(SSL_CTX_use_certificate_file(ctx, CLIENT_CERT, SSL_FILETYPE_PEM) <= 0)
+    {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+
+    if (SSL_CTX_use_PrivateKey_file(ctx, CLIENT_PRI, SSL_FILETYPE_PEM) <= 0)
+    {
+        ERR_print_errors_fp(stderr);
+        abort();
+    }
+    
+    if (!SSL_CTX_check_private_key(ctx))
+    {
+        ERR_print_errors_fp(stderr);
+        cout << "--> Private key does not match the public certification." << endl;
+        abort();
+    }
+}
+
+void showCerts(SSL *ssl)
+{
+    X509 *certification;
+    char *certResult;
+    
+    certification = SSL_get_peer_certificate(ssl);
+    if (certification != NULL)
+    {
+        cout << "Digital certificate information: " << endl;
+        certResult = X509_NAME_oneline(X509_get_subject_name(certification), 0, 0);
+        cout << "Certification: " << certResult << endl;
+        free(certResult);
+        certResult = X509_NAME_oneline(X509_get_issuer_name(certification), 0, 0);
+        cout << "Issuer: " << certResult << endl;
+        free(certResult);
+        X509_free(certification);
+    }
+    else
+        cout << "--> No certification!" << endl;
+}
 
 Client::Client()
 {
@@ -65,6 +129,31 @@ bool Client::connection(bool withHost)
         {
             perror("server connect failed.");
             return false;
+        }
+
+        // initialize SSL
+        SSL_CTX *ctx;
+        ctx = initCTX();
+        CertifyClient(ctx);
+
+        // based on CTX and generate new SSL and connect it
+        ssl = SSL_new(ctx);
+        SSL_set_fd(ssl, server_sock);
+        if(SSL_connect(ssl) <= 0)
+            ERR_print_errors_fp(stderr);
+        else
+        {
+            bzero(buff, MAX);
+            showCerts(ssl);
+
+            // receive register
+            int reciback = SSL_read(ssl, buff, sizeof(buff));
+            if(reciback < 0)
+            {
+                cout << "--> Fail to receive.";
+                return -1;
+            }
+            cout << "buff : " << buff << endl;
         }
     }
     else
