@@ -1,50 +1,19 @@
-#include <iostream>     //cout
-#include <string.h>     //strlen
-#include <string>       //string
-#include <sys/socket.h> //socket
-#include <arpa/inet.h>  //inet_addr
-#include <netdb.h>      //hostent
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-using namespace std;
+#include "client.h"
 
-const string local_addr = "127.0.0.1";
 int server_sock = -1; // talk to server
 int client_sock = -1; // talk to client
 int new_sock = -1; // listen from client
-
-bool contains(string src, string token){
-    return src.rfind(token, 0) == 0;
-}
-
-class Client
-{
-private:
-    struct sockaddr_in server;
-    struct sockaddr_in clientReciever;
-
-public:
-    Client();
-    bool isServerConnected;
-    bool getClientConnectStatus();
-    bool createSocket(bool withHost, string address, int port); // create socket
-    bool connection(bool withHost); // create connection
-    void listen_port();
-    void closeConnection();
-    void close_client_connection();
-    bool send_data(bool toHost, string data);
-    string receive(bool fromHost);
-};
 
 Client::Client()
 {
     bzero(&server, sizeof(server));                 // initialize server
     bzero(&clientReciever, sizeof(clientReciever)); // initialize clientReciever
     isServerConnected = false;
+}
+
+int Client::GetClientSock()
+{
+    return client_sock;
 }
 
 bool Client::createSocket(bool withHost, string address, int port)
@@ -215,84 +184,4 @@ string Client::receive(bool fromHost)
     
     string response = buffer;
     return response;
-}
-
-int main(int argc, char *argv[])
-{
-    Client client;
-    string host;
-    int server_port; // the port to connect with the server
-    int client_port; // the port listening for connection
-
-    cout << "type in your host ip and port: ";
-    cin >> host >> server_port;
-    cout << "type in client communication port: ";
-    cin >> client_port;
-
-    pid_t pid = fork();
-    if (pid == -1)
-    {
-        perror("fork fail");
-    }
-    else if (pid == 0) // child id, listen and print
-    {
-        client.createSocket(false, local_addr, client_port);
-        client.listen_port();
-    }
-    else
-    {
-        client.createSocket(true, host, server_port); //connect to host
-        client.isServerConnected = client.connection(true);
-        client.receive(true);
-
-        while (client.isServerConnected)
-        {
-            string receiver;
-            cout << "send command to host or client (h/c) ? ";
-            cin >> receiver;
-
-            if (receiver != "h" and receiver != "c")
-            {
-                cout << "please type `h` or `c` \n";
-                continue;
-            }
-
-            bool withHost = receiver == "h";
-            if (!withHost) // talk to client
-            {
-
-                int port;
-                cout << "type in client receiver's port: ";
-                cin >> port;
-                cout << "client_sock = " << client_sock << endl;
-                if (client_sock == -1) {
-                    client.createSocket(withHost, local_addr, port);
-                    client.connection(withHost);
-                }
-                
-                string command;
-                cout << "command: ";
-                cin >> command;
-                client.send_data(withHost, command);
-                string response = client.receive(withHost);
-
-            }
-            else // talk to server
-            {
-                string command;
-                cout << "command: ";
-                cin >> command;
-                client.send_data(withHost, command);
-                string response = client.receive(withHost);
-
-                if (contains(response, "Bye"))
-                {
-                    client.closeConnection();
-                    return 0;
-                }
-            }
-        }
-    }
-
-    return 0;
 }
