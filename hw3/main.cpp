@@ -10,6 +10,6 @@ int main(int argc, char *argv[])
     myserver.createSocket(port);
     myserver.listen_port();
     myserver.Start();
-
+    myserver.EndServerConnection();
     return 0;
 }

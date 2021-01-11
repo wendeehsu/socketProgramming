@@ -166,8 +166,22 @@ void *Host::client_thread(void *arg)
             cerr << "Can't accepting the request from client!" << endl;
             exit(0);
         }
+
+        ssl[client_sock] = SSL_new(ctx);
+        SSL_set_fd(ssl[client_sock], client_sock);
+        int sslAcceptRes = SSL_accept(ssl[client_sock]);
+        if(sslAcceptRes < 0)
+        {
+            cout << "--> No SSL acception at server." << endl;
+            continue;
+        }
+        
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
-        send_data(client_sock, "Connection accepted!");
+
+        string msg = "--> Connection accepted.";
+        SSL_write(ssl[forClient], msg.c_str(), msg.length());
+
+        // send_data(client_sock, "Connection accepted!");
 
         while (true)
         {
@@ -332,4 +346,10 @@ void Host::EndConnection(int sd)
         }
     }
     close(sd);
+}
+
+void Host::EndServerConnection()
+{
+    close(server_sock);
+    SSL_CTX_free(ctx);
 }

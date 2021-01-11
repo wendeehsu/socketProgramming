@@ -40,6 +40,7 @@ public:
     string GetOnlineAccounts(int sd);
     string Login(int sd, string name);
     void EndConnection(int sd);
+    void EndServerConnection();
 };
 
 class Account
