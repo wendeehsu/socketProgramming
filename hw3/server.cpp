@@ -126,7 +126,7 @@ void Host::listen_port()
 bool Host::send_data(int client_sock, string data)
 {
     cout << "Sending data..." << data << "\n";
-    if (send(client_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
+    if (SSL_write(ssl[client_sock], data.c_str(), data.length()) < 0)
     {
         perror("Send failed : ");
         return false;
@@ -137,12 +137,12 @@ bool Host::send_data(int client_sock, string data)
 
 void Host::receive(int client_sock)
 {
-    char buffer[2000] = {0};
-    memset(buffer, '\0', sizeof(buffer));
-
-    if (recv(client_sock, buffer, sizeof(buffer), 0) > 0)
+    char buffer[MAX];
+    bzero(buffer, MAX);
+    
+    if (SSL_read(ssl[client_sock], buffer, sizeof(buffer)) > 0)
     {
-        cout << "client :" << buffer << "\n";
+        cout << "SSL client: " << buffer << "\n";
         string data = buffer;
         string response = handleEvent(client_sock, split_str(data));
     }
@@ -185,9 +185,7 @@ void *Host::client_thread(void *arg)
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
 
         string msg = "--> Connection accepted.";
-        SSL_write(ssl[client_sock], msg.c_str(), msg.length());
-
-        // send_data(client_sock, "Connection accepted!");
+        send_data(client_sock, msg);
 
         while (true)
         {

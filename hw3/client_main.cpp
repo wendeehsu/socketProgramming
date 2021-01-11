@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
     {
         client.createSocket(true, local_addr, server_port); //connect to host
         client.isServerConnected = client.connection(true);
-        // client.receive(true);
 
         while (client.isServerConnected)
         {

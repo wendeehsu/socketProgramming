@@ -5,7 +5,6 @@ int client_sock = -1; // talk to client
 int new_sock = -1; // listen from client
 char CLIENT_CERT[MAX] = "a.crt";
 char CLIENT_PRI[MAX] = "a.key";
-char buff[MAX];
 SSL *ssl;
 
 SSL_CTX* initCTX(void)
@@ -143,17 +142,8 @@ bool Client::connection(bool withHost)
             ERR_print_errors_fp(stderr);
         else
         {
-            bzero(buff, MAX);
             showCerts(ssl);
-
-            // receive register
-            int reciback = SSL_read(ssl, buff, sizeof(buff));
-            if(reciback < 0)
-            {
-                cout << "--> Fail to receive.";
-                return -1;
-            }
-            cout << "buff : " << buff << endl;
+            receive(true);
         }
     }
     else
@@ -232,7 +222,8 @@ bool Client::send_data(bool toHost, string data)
     if (toHost)
     {
         cout << "host..." << data << "\n";
-        if (send(server_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
+
+        if (SSL_write(ssl, data.c_str(), data.length()) < 0)
         {
             perror("Send failed : ");
             return false;
@@ -253,14 +244,14 @@ bool Client::send_data(bool toHost, string data)
 
 string Client::receive(bool fromHost)
 {
-    char buffer[2000] = {0};
-    memset(buffer, '\0', sizeof(buffer));
+    char buffer[MAX];
+    bzero(buffer, MAX);
 
     if (fromHost)
     {
-        if (recv(server_sock, buffer, sizeof(buffer), 0) > 0)
+        if (SSL_read(ssl, buffer, sizeof(buffer)) > 0)
         {
-            cout << "response from server : \n" << buffer << "\n";
+            cout << "SSL Server response: \n" << buffer << endl;
         }
     }
     else
