@@ -71,11 +71,11 @@ void CertifyServer(SSL_CTX* ctx)
 SSL_CTX* initCTXServer(void)
 {
     SSL_CTX *ctx;
-    SSL_METHOD *ssl_method;
+    const SSL_METHOD *ssl_method;
 
-    OpenSSL_add_all_algorithms();
+    SSL_library_init();
     SSL_load_error_strings();
-    ssl_method = TLSv1_server_method();
+    ssl_method = SSLv23_method();
     ctx = SSL_CTX_new(ssl_method);
     if(ctx == NULL)
     {
