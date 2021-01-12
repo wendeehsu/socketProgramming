@@ -25,7 +25,7 @@ private:
 
 public:
     Client();
-    int GetClientSock();
+    SSL* GetHostSSL();
     bool isServerConnected;
     bool getClientConnectStatus();
     bool createSocket(bool withHost, string address, int port); // create socket
@@ -33,6 +33,6 @@ public:
     void listen_port();
     void closeConnection();
     void close_client_connection();
-    bool send_data(bool toHost, string data);
+    bool send_data(SSL *receiverSSL, string data);
     string receive(bool fromHost);
 };

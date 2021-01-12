@@ -50,14 +50,6 @@ int main(int argc, char *argv[])
                 int port;
                 cout << "type in client receiver's port: ";
                 cin >> port;
-                // client.createSocket(withHost, local_addr, port);
-                // client.connection(withHost);
-                
-                // string command;
-                // cout << "command: ";
-                // cin >> command;
-                // client.send_data(withHost, command);
-                // string response = client.receive(withHost);
 
                 int socket_transfer = 0;
                 struct sockaddr_in conn_addr;
@@ -98,7 +90,7 @@ int main(int argc, char *argv[])
                 string command;
                 cout << "command: ";
                 cin >> command;
-                client.send_data(withHost, command);
+                client.send_data(client.GetHostSSL(), command);
                 string response = client.receive(withHost);
 
                 if (contains(response, "Bye"))

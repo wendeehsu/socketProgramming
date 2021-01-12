@@ -74,9 +74,9 @@ Client::Client()
     isServerConnected = false;
 }
 
-int Client::GetClientSock()
+SSL* Client::GetHostSSLClientSock()
 {
-    return client_sock;
+    return ssl;
 }
 
 bool Client::createSocket(bool withHost, string address, int port)
@@ -215,30 +215,15 @@ void Client::close_client_connection()
     new_sock = -1;
 }
 
-bool Client::send_data(bool toHost, string data)
+bool Client::send_data(SSL *receiverSSL, string data)
 {
-    cout << "Sending data to ";
+    cout << "Sending data..." << data << endl;
 
-    if (toHost)
+    if (SSL_write(receiverSSL, data.c_str(), data.length()) < 0)
     {
-        cout << "host..." << data << "\n";
-
-        if (SSL_write(ssl, data.c_str(), data.length()) < 0)
-        {
-            perror("Send failed : ");
-            return false;
-        }
+        perror("Send failed : ");
+        return false;
     }
-    else
-    {
-        cout << "client..." << data << "\n";
-        if (send(client_sock, data.c_str(), strlen(data.c_str()), 0) < 0)
-        {
-            perror("Send failed : ");
-            return false;
-        }
-    }
-
     return true;
 }
 
