@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
                 cout << "command: ";
                 cin >> command;
                 client.send_data(client.GetHostSSL(), command);
-                string response = client.receive(withHost);
+                string response = client.receive(client.GetHostSSL());
 
                 if (contains(response, "Bye"))
                 {

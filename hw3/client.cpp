@@ -8,6 +8,7 @@ char CLIENT_B_CERT[MAX] = "b.crt";
 char CLIENT_PRI[MAX] = "a.key";
 char CLIENT_B_PRI[MAX] = "b.key";
 SSL *ssl;
+SSL *ssl_cs; // client-side server
 
 SSL_CTX* initCTX(void)
 {
@@ -145,7 +146,7 @@ bool Client::connection(bool withHost)
         else
         {
             showCerts(ssl);
-            receive(true);
+            receive(ssl);
         }
     }
     else
@@ -191,11 +192,20 @@ void Client::listen_port()
             cerr << "Can't accepting the request from client!" << endl;
             exit(0);
         }
+        
+        SSL_CTX *ctx2;
+        ctx2 = initCTX();
+        Certify(ctx2, CLIENT_CERT, CLIENT_PRI);
+        ssl_cs = SSL_new(ctx2);
+        SSL_set_fd(ssl_cs, new_sock);
+        SSL_accept(ssl_cs);
 
         cout << "Connection accepted from " << inet_ntoa(newSocketAddr.sin_addr) << " " << ntohs(newSocketAddr.sin_port) << endl;
+        send_data(ssl_cs, "--> Client connection accepted!");
+        
         while (true)
         {
-            receive(false);
+            receive(ssl_cs);
         }
     }
 }
@@ -229,11 +239,17 @@ bool Client::send_data(SSL *receiverSSL, string data)
     return true;
 }
 
-string Client::receive(bool fromHost)
+string Client::receive(SSL *receiverSSL)
 {
     char buffer[MAX];
     bzero(buffer, MAX);
 
+    if (SSL_read(receiverSSL, buffer, sizeof(buffer)) > 0)
+    {
+        cout << "SSL response: \n" << buffer << endl;
+    }
+
+    /*
     if (fromHost)
     {
         if (SSL_read(ssl, buffer, sizeof(buffer)) > 0)
@@ -247,7 +263,7 @@ string Client::receive(bool fromHost)
         {
             cout << "response from client : \n" << buffer << "\n";
         }
-    }
+    }*/
     
     string response = buffer;
     return response;

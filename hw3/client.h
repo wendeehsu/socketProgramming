@@ -34,5 +34,5 @@ public:
     void closeConnection();
     void close_client_connection();
     bool send_data(SSL *receiverSSL, string data);
-    string receive(bool fromHost);
+    string receive(SSL *receiverSSL);
 };
