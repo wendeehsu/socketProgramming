@@ -73,14 +73,27 @@ int main(int argc, char *argv[])
                     continue;
                 }
 
-                string command;
-                cout << "command: ";
-                cin >> command;
-
-                if (send(socket_transfer, command.c_str(), strlen(command.c_str()), 0) < 0)
+                SSL_CTX *ctx1;
+                SSL *ssl1;
+                char CLIENT_B_CERT[MAX] = "b.crt";
+                char CLIENT_B_PRI[MAX] = "b.key";
+                
+                ctx1 = client.initCTX();
+                client.Certify(ctx1, CLIENT_B_CERT, CLIENT_B_PRI);
+                ssl1 = SSL_new(ctx1);
+                SSL_set_fd(ssl1, socket_transfer);
+                
+                if(SSL_connect(ssl1) <= 0)
+                    ERR_print_errors_fp(stderr);
+                else
                 {
-                    perror("Send failed : ");
-                    return false;
+                    client.receive(ssl1);
+
+                    string command;
+                    cout << "command: ";
+                    cin >> command;
+                    
+                    client.send_data(ssl1, command);
                 }
 
                 close(socket_transfer);

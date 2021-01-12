@@ -26,6 +26,8 @@ private:
 public:
     Client();
     SSL* GetHostSSL();
+    SSL_CTX* initCTX(void);
+    void Certify(SSL_CTX* ctx, char* cert, char* key);
     bool isServerConnected;
     bool getClientConnectStatus();
     bool createSocket(bool withHost, string address, int port); // create socket

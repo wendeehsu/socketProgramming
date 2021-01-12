@@ -4,13 +4,11 @@ int server_sock = -1; // talk to server
 int client_sock = -1; // talk to client
 int new_sock = -1; // listen from client
 char CLIENT_CERT[MAX] = "a.crt";
-char CLIENT_B_CERT[MAX] = "b.crt";
 char CLIENT_PRI[MAX] = "a.key";
-char CLIENT_B_PRI[MAX] = "b.key";
 SSL *ssl;
 SSL *ssl_cs; // client-side server
 
-SSL_CTX* initCTX(void)
+SSL_CTX* Client::initCTX(void)
 {
     SSL_CTX *ctx;
     const SSL_METHOD *ssl_method;
@@ -27,7 +25,7 @@ SSL_CTX* initCTX(void)
     return ctx;
 }
 
-void Certify(SSL_CTX* ctx, char* cert, char* key)
+void Client::Certify(SSL_CTX* ctx, char* cert, char* key)
 {
     if(SSL_CTX_use_certificate_file(ctx, cert, SSL_FILETYPE_PEM) <= 0)
     {
@@ -248,22 +246,6 @@ string Client::receive(SSL *receiverSSL)
     {
         cout << "SSL response: \n" << buffer << endl;
     }
-
-    /*
-    if (fromHost)
-    {
-        if (SSL_read(ssl, buffer, sizeof(buffer)) > 0)
-        {
-            cout << "SSL Server response: \n" << buffer << endl;
-        }
-    }
-    else
-    {
-        if (recv(new_sock, buffer, sizeof(buffer), 0) > 0) 
-        {
-            cout << "response from client : \n" << buffer << "\n";
-        }
-    }*/
     
     string response = buffer;
     return response;
