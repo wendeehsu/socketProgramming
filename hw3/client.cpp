@@ -3,6 +3,10 @@
 int server_sock = -1; // talk to server
 int client_sock = -1; // talk to client
 int new_sock = -1; // listen from client
+char CLIENT_CERT[MAX] = "a.crt";
+char CLIENT_B_CERT[MAX] = "b.crt";
+char CLIENT_PRI[MAX] = "a.key";
+char CLIENT_B_PRI[MAX] = "b.key";
 SSL *ssl;
 
 SSL_CTX* initCTX(void)
@@ -22,17 +26,15 @@ SSL_CTX* initCTX(void)
     return ctx;
 }
 
-void Certify(SSL_CTX* ctx, bool withServer)
+void Certify(SSL_CTX* ctx, char* cert, char* key)
 {
-    char CERT[MAX] = withServer ? "a.crt" : "b.crt";
-    char PRI[MAX] = withServer ? "a.key" : "b.key";
-    if(SSL_CTX_use_certificate_file(ctx, CERT, SSL_FILETYPE_PEM) <= 0)
+    if(SSL_CTX_use_certificate_file(ctx, cert, SSL_FILETYPE_PEM) <= 0)
     {
         ERR_print_errors_fp(stderr);
         abort();
     }
 
-    if (SSL_CTX_use_PrivateKey_file(ctx, PRI, SSL_FILETYPE_PEM) <= 0)
+    if (SSL_CTX_use_PrivateKey_file(ctx, key, SSL_FILETYPE_PEM) <= 0)
     {
         ERR_print_errors_fp(stderr);
         abort();
@@ -133,7 +135,7 @@ bool Client::connection(bool withHost)
         // initialize SSL
         SSL_CTX *ctx;
         ctx = initCTX();
-        Certify(ctx, true);
+        Certify(ctx, CLIENT_CERT, CLIENT_PRI);
 
         // based on CTX and generate new SSL and connect it
         ssl = SSL_new(ctx);
