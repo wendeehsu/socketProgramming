@@ -249,7 +249,7 @@ string Client::receive(SSL *receiverSSL)
         cout << "SSL response: \n" << buffer << endl;
         if (receiverSSL == ssl_cs) {
             string response = buffer;
-            HanleTransfer(response);
+            HandleTransfer(response);
         }
     }
     
@@ -274,7 +274,7 @@ vector<string> split_str(string s)
     return tokens;
 }
 
-void HanleTransfer(string msg)
+void Client::HandleTransfer(string msg)
 {
     vector<string> tokens = split_str(msg);
     if (tokens.size() != 3)

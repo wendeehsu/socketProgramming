@@ -23,6 +23,7 @@ class Client
 private:
     struct sockaddr_in server;
     struct sockaddr_in clientReciever;
+    void HandleTransfer(string msg)
 
 public:
     Client();
