@@ -289,5 +289,10 @@ void Client::HandleTransfer(string msg)
         string receiver = tokens[2];
         int num = stoi(tokens[1]);
         cout << payer << " is going to pay " << num << " to " << receiver << endl;
+
+        // TODO: handle exception here.
+        send_data(ssl, "TRANS#"+msg);
+        string serverReply = receive(ssl);
+        cout << "serverReply -->" << serverReply << endl;
     }
 }

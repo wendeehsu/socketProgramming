@@ -233,6 +233,13 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
     {
         response = Login(client_sock, tokens[0]);
     }
+    else if (contains(tokens[0], "TRANS") && tokens.size() == 4)
+    {
+        string payer = tokens[1];
+        string receiver = tokens[3];
+        int num = stoi(tokens[2]);
+        response = payer + " is going to pay " + tokens[2] + "to " + receiver;
+    }
     else
     {
         response = "please check your command format \n";
