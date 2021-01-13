@@ -163,6 +163,7 @@ bool Client::connection(bool withHost)
 void Client::closeConnection()
 {
     cout << "end connection!";
+    SSL_free(ssl);
     close(server_sock);
 }
 
@@ -204,6 +205,8 @@ void Client::listen_port()
         while (true)
         {
             receive(ssl_cs);
+            // TODO: add transfer logic.
+            // SSL_free in the end
         }
     }
 }

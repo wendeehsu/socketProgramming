@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
                     client.send_data(ssl1, command);
                 }
 
+                SSL_free(ssl1);
                 close(socket_transfer);
             }
             else // talk to server

@@ -349,6 +349,7 @@ void Host::EndConnection(int sd)
             accounts[i].sd = -1;
         }
     }
+    SSL_free(ssl[sd]);
     close(sd);
 }
 
