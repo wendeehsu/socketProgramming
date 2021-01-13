@@ -191,6 +191,8 @@ void *Host::client_thread(void *arg)
         {
             receive(client_sock);
         }
+
+        EndConnection(client_sock);
     }
 
     pthread_exit(NULL);
@@ -214,14 +216,10 @@ void Host::Start()
 string Host::handleEvent(int client_sock, vector<string> tokens)
 {
     string response;
-    bool isExit = false;
 
     if (contains(tokens[0], "Exit") && tokens.size() == 1)
     {
         response = "Bye \n";
-        send_data(client_sock, response);
-        EndConnection(client_sock);
-        isExit = true;
     }
     else if (contains(tokens[0], "REGISTER") && tokens.size() == 3)
     {
@@ -240,11 +238,7 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
         response = "please check your command format \n";
     }
     cout << response;
-
-    if (!isExit)
-    {
-        send_data(client_sock, response);
-    }
+    send_data(client_sock, response);
 
     return response;
 }
@@ -349,6 +343,8 @@ void Host::EndConnection(int sd)
             accounts[i].sd = -1;
         }
     }
+
+    SSL_shutdown(ssl[sd]);
     SSL_free(ssl[sd]);
     close(sd);
 }
