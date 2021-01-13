@@ -204,8 +204,7 @@ void Client::listen_port()
         
         while (true)
         {
-            receive(ssl_cs);
-            // TODO: add transfer logic.
+            string msg = receive(ssl_cs);
             // SSL_free in the end
         }
     }
@@ -248,8 +247,47 @@ string Client::receive(SSL *receiverSSL)
     if (SSL_read(receiverSSL, buffer, sizeof(buffer)) > 0)
     {
         cout << "SSL response: \n" << buffer << endl;
+        if (receiverSSL == ssl_cs) {
+            string response = buffer;
+            HanleTransfer(response);
+        }
     }
     
     string response = buffer;
     return response;
+}
+
+vector<string> split_str(string s)
+{
+    vector<string> tokens;
+    string delimiter = "#";
+    string token;
+    int pos = 0;
+    while ((pos = s.find(delimiter)) != string::npos)
+    {
+        token = s.substr(0, pos);
+        tokens.push_back(token);
+        s.erase(0, pos + delimiter.length());
+    }
+    tokens.push_back(s);
+
+    return tokens;
+}
+
+void HanleTransfer(string msg)
+{
+    vector<string> tokens = split_str(msg);
+    if (tokens.size() != 3)
+    {
+        cout << "--> unknown transfer format.";
+        send_data(ssl_cs, "--> unknown transfer format.");
+        return;
+    } 
+    else
+    {
+        string payer = tokens[0];
+        string receiver = tokens[2];
+        int num = stoi(tokens[1]);
+        cout << payer << " is going to pay " << num << " to " << receiver << endl;
+    }
 }

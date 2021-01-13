@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <netinet/in.h>
+#include <vector>
 #include <openssl/crypto.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
