@@ -12,7 +12,7 @@ vector<Account> accounts; // account list
 
 bool contains(string src, string token)
 {
-    return src.rfind(token, 0) == 0;
+    return src.find(token) != string::npos;
 }
 
 vector<string> split_str(string s)
@@ -238,7 +238,15 @@ string Host::handleEvent(int client_sock, vector<string> tokens)
         string payer = tokens[1];
         string receiver = tokens[3];
         int num = stoi(tokens[2]);
-        response = payer + " is going to pay " + tokens[2] + "to " + receiver;
+        string accounts = GetOnlineAccounts(client_sock);
+        if (contains(accounts, payer) && contains(accounts, receiver))
+        {
+            response = Transaction(payer, num, receiver);
+        }
+        else
+        {
+            response = "Account is not online. \n";
+        }
     }
     else
     {
@@ -340,6 +348,40 @@ string Host::Login(int sd, string name)
         return "220 AUTH_FAIL\n";
     }
 }
+
+string Host::Transaction(string payer, int num, string receiver)
+{
+    // check num enough
+    for (int i = 0; i < accounts.size(); i++)
+    {
+        if (accounts[i].name == payer)
+        {
+            bool balanceEnough = accounts[i].balance >= num;
+            if (balanceEnough)
+            {
+                accounts[i].balance -= num;
+            }
+            else
+            {
+                return "Balance not enough";
+            }
+            break;    
+        }
+    }
+
+    for (int i = 0; i < accounts.size(); i++)
+    {
+        if (accounts[i].name == receiver)
+        {
+            
+            accounts[i].balance += num;
+            break;          
+        }
+    }
+
+    return "100 OK\n"
+}
+
 
 void Host::EndConnection(int sd)
 {

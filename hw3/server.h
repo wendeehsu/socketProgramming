@@ -39,6 +39,7 @@ public:
     string RegisterAccount(vector<string> data);
     string GetOnlineAccounts(int sd);
     string Login(int sd, string name);
+    string Transaction(string payer, int num, string receiver);
     void EndConnection(int sd);
     void EndServerConnection();
 };
