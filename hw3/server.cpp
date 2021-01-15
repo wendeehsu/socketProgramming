@@ -379,7 +379,7 @@ string Host::Transaction(string payer, int num, string receiver)
         }
     }
 
-    return "100 OK\n"
+    return "100 OK\n";
 }
 
 
