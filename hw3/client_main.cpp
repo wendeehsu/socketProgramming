@@ -51,6 +51,13 @@ int main(int argc, char *argv[])
                 cout << "type in client receiver's port: ";
                 cin >> port;
 
+                string command;
+                cout << "command: ";
+                cin >> command;
+                client.send_data(client.GetHostSSL(), "TRANS#"+command);
+                string response = client.receive(client.GetHostSSL());
+
+
                 int socket_transfer = 0;
                 struct sockaddr_in conn_addr;
 
@@ -88,11 +95,6 @@ int main(int argc, char *argv[])
                 else
                 {
                     client.receive(ssl1);
-
-                    string command;
-                    cout << "command: ";
-                    cin >> command;
-                    
                     client.send_data(ssl1, command);
                 }
 

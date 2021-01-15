@@ -291,8 +291,8 @@ void Client::HandleTransfer(string msg)
         cout << payer << " is going to pay " << num << " to " << receiver << endl;
 
         // TODO: handle exception here.
-        send_data(ssl, "TRANS#"+msg);
-        string serverReply = receive(ssl);
-        cout << "serverReply -->" << serverReply << endl;
+        // send_data(ssl, "TRANS#"+msg);
+        // string serverReply = receive(ssl);
+        // cout << "serverReply -->" << serverReply << endl;
     }
 }
